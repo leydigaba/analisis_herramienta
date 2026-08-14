@@ -4,8 +4,8 @@ import streamlit as st
 from analisis_csv import mostrar_analisis
 from prediccion_precio_casa import mostrar_prediccion
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from datos_mixtos.chat import mostrar_chat
+
+from chat import mostrar_chat
 
 st.set_page_config(page_title="Proyecto Final", layout="wide", initial_sidebar_state="expanded")
 

@@ -47,6 +47,33 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 
+def cargar_env_local():
+    env_candidates = [
+        Path(__file__).resolve().parent / ".env",
+        Path(__file__).resolve().parents[1] / ".env",
+        Path.cwd() / ".env",
+    ]
+    for env_path in env_candidates:
+        if env_path.exists():
+            load_dotenv(env_path, override=False)
+
+    # Compatibilidad con rutas y nombres de clave comunes en OpenRouter
+    for key_name in [
+        "OPENROUTER_API_KEY",
+        "OPENAI_API_KEY",
+        "MI_CHAT_DATOS",
+        "mi-chat-datos",
+        "ANTHROPIC_API_KEY",
+    ]:
+        value = os.getenv(key_name)
+        if value and value.strip():
+            os.environ["OPENROUTER_API_KEY"] = value.strip().strip('"').strip("'")
+            return
+
+
+cargar_env_local()
+
+
 def render_message_html(text: str) -> str:
     salida = []
     ultimo = 0
@@ -404,14 +431,14 @@ def mostrar_chat():
         )
         st.stop()
 
-    api_key = os.getenv("OPENROUTER_API_KEY")
+    api_key = os.getenv("OPENROUTER_API_KEY") or os.getenv("MI_CHAT_DATOS") or os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
         st.error(
-            "No se encontró OPENROUTER_API_KEY. Agrega un archivo .env con esa variable en la carpeta datos_mixtos."
+            "No se encontró ninguna clave válida para OpenRouter. Revisa el .env y usa OPENROUTER_API_KEY o MI_CHAT_DATOS."
         )
         st.stop()
 
-    cliente = OpenAI(api_key=api_key, base_url="https://openrouter.ai/api/v1")
+    cliente = OpenAI(api_key=api_key.strip().strip('"').strip("'"), base_url="https://openrouter.ai/api/v1")
 
     SYSTEM_PROMPT = (
     "Eres un experto analista de datos especializado unicamente en Python, pandas y joblib. "
